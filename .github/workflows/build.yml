@@ -2,6 +2,8 @@ name: Build WATUT and CoroUtil for Minecraft 1.21.11
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
 permissions:
   contents: read
