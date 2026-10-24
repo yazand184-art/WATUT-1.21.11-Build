@@ -1,0 +1,47 @@
+name: Build WATUT and CoroUtil for Minecraft 1.21.11
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Check out community source branches
+        shell: bash
+        run: |
+          git clone --depth 1 --branch 1.21.11 https://github.com/Brskt/CoroUtil.git CoroUtil-1.21.11
+          git clone --depth 1 --branch 1.21.11 https://github.com/Brskt/WATUT.git WATUT-1.21.11
+
+      - name: Build and publish CoroUtil locally
+        working-directory: CoroUtil-1.21.11
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew -b build_fabric.gradle publishToMavenLocal
+
+      - name: Build WATUT
+        working-directory: WATUT-1.21.11
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew -b build_fabric.gradle build
+
+      - name: Upload resulting JARs
+        uses: actions/upload-artifact@v4
+        with:
+          name: WATUT-CoroUtil-Fabric-1.21.11
+          path: |
+            CoroUtil-1.21.11/build/libs/*fabric*.jar
+            WATUT-1.21.11/build/libs/*fabric*.jar
+          if-no-files-found: error
+          retention-days: 14
